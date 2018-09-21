@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="BoardDao">
+  	<insert id="insertBoard" parameterType="BoardVO">
+  		INSERT INTO BOARD (
+						   ID
+						   , SUBJECT
+						   , CONTENT
+						   , EMAIL
+						   , CRT_DT
+						   , MDFY_DT
+						   , FILE_NAME
+						   , ORIGIN_FILE_NAME
+		) VALUES (
+						   BOARD_ID_SEQ.NEXTVAL
+						   , #{subject}
+						   , #{content}
+						   , #{email}
+						   , SYSDATE
+						   , SYSDATE
+						   , #{fileName}
+						   , #{originFileName}
+		)   
+  	</insert>
+  
+  	<update id="updateBoard" parameterType="BoardVO">
+  	
+  	</update>
+  	
+  	<select id="selectOneBoard" parameterType="_int" resultMap="boardResultMap">
+  		SELECT	B.ID                
+				, B.SUBJECT         
+				, B.CONTENT         
+				, B.EMAIL B_EMAIL           
+				, B.CRT_DT          
+				, B.MDFY_DT         
+				, B.FILE_NAME       
+				, B.ORIGIN_FILE_NAME
+				, M.EMAIL M_EMAIL
+				, M.NAME
+				, M.POINT
+		FROM	BOARD B
+				, MEMBERS M
+		WHERE	B.EMAIL = M.EMAIL
+		AND		ID = #{id}
+  	</select>
+  	
+  	<delete id="deleteOneBoard" parameterType="_int">
+  		DELETE	
+		FROM	BOARD
+		WHERE	ID = #{id}
+  	</delete>
+  	
+  	<resultMap type="BoardVO" id="boardResultMap" >
+  		<id property="id" column="ID" />									<!-- PK -->
+  		<result property="subject" column="SUBJECT"/>						<!-- 일반 변수 -->
+  		<result property="content" column="CONTENT"/>						<!-- 일반 변수 -->
+  		<result property="email" column="B_EMAIL"/>							<!-- 일반 변수 -->
+  		<result property="crtDt" column="CRT_DT"/>							<!-- 일반 변수 -->
+  		<result property="mdfyDt" column="MDFY_DT"/>						<!-- 일반 변수 -->
+  		<result property="fileName" column="FILE_NAME"/>					<!-- 일반 변수 -->
+  		<result property="originFileName" column="ORIGIN_FILE_NAME"/>		<!-- 일반 변수 -->
+  		<association property="memberVO" javaType="MemberVO">				<!-- BoardVO안의 MemberVO -->
+  			<id property="email" column="M_EMAIL" />							<!-- memberVO의 PK == id -->
+  			<result property="name" column="NAME" />
+  			<result property="point" column="POINT" />
+  		</association>
+  	</resultMap>
+  	
+  	<select id="selectAllBoardsCount" parameterType="BoardSearchVO" resultType="_int">
+  		SELECT	COUNT(1)
+		FROM	BOARD B
+				, MEMBERS M
+		WHERE	B.EMAIL = M.EMAIL
+		<if test="searchKeyword != null and searchKeyword != ''" >
+		AND		SUBJECT LIKE '%' || #{searchKeyword} || '%'
+		</if>
+  	</select>
+  	
+  	<select id="selectAllBoards" parameterType="BoardSearchVO" resultMap="boardResultMap"> 
+  		SELECT	*
+  		FROM	(
+  					SELECT	A.*
+  							, ROWNUM RNUM
+  					FROM	(
+						  		SELECT	B.ID                
+										, B.SUBJECT         
+										, B.CONTENT         
+										, B.EMAIL B_EMAIL           
+										, B.CRT_DT          
+										, B.MDFY_DT         
+										, B.FILE_NAME       
+										, B.ORIGIN_FILE_NAME
+										, M.EMAIL M_EMAIL
+										, M.NAME
+										, M.POINT
+								FROM	BOARD B
+										, MEMBERS M
+								WHERE	B.EMAIL = M.EMAIL
+								<if test="searchKeyword != null and searchKeyword != ''" >
+								AND		SUBJECT LIKE '%' || #{searchKeyword} || '%'
+								</if>
+								ORDER	BY ID DESC
+							) A
+					WHERE	ROWNUM <![CDATA[<=]]> #{endRow}				<!-- <를 태그를 여는 것으로 인식할 수 있다. <![CDATA[<=]]> 이렇게 쓰면 일반 텍스트로 인식 -->	
+				) 
+		WHERE	RNUM >= #{startRow}
+  	</select>
+  </mapper>

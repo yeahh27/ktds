@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- 
+		BoardDaoImpl boardDao = new BoardDaoImpl();
+		BoardServiceImpl boardService = new BoardServiceImpl();
+		boardService.setBoardDao(boardDao);
+ 	-->
+	
+	<!-- BoardDaoImpl board.dao = new BoardDaoImpl(); -->
+	<bean	id="board.dao" 
+			class="com.ktds.board.dao.BoardDaoImpl"></bean>		<!-- id=객체 이름 , class=타입-->
+			
+	<!-- BoardServiceImpl board.service = new BoardServiceImpl(); -->
+	<bean	id="board.service"
+			class="com.ktds.board.service.BoardServiceImpl">
+		<!-- board.service.setBoardDao(boardDao); -->	
+		<!-- property : setter 호출 -->
+		<property name="boardDao" ref="board.dao" />	<!-- name="이름" ref="파라미터" Reference Type -->
+														<!-- val="" String (Primitive Type은 적을 수 없다.) -->
+	</bean>
+	
+	<!-- BoardServiceImpl2 board.service2 = new BoardServiceImpl2(board.dao); -->
+	<bean	id="board.service2"
+			class="com.ktds.board.service.BoardServiceImpl2">
+		<constructor-arg name="boradDao" ref="board.dao" />	<!-- 생성자 arguments / name=생성자의 arguments이름 -->
+	</bean>
+</beans>
